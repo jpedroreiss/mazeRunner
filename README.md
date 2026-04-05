@@ -3,7 +3,6 @@
 <img width="1364" height="637" alt="Captura de tela 2026-04-05 174827" src="https://github.com/user-attachments/assets/789c5e37-5cdd-41a4-a8c3-5cd1f00fd9bb" />
 <img width="1363" height="634" alt="Captura de tela 2026-04-05 174807" src="https://github.com/user-attachments/assets/e1787085-b886-4a5e-a15b-711f5715b8e3" />
 
-
 ## Visao Geral
 Maze Runner e um jogo 2D em grid renderizado com HTML5 Canvas. A cada fase, um novo labirinto procedural e gerado, inimigos perseguem o jogador com pathfinding e o objetivo e alcancar a porta de saida antes do tempo acabar.
 
@@ -12,6 +11,8 @@ Objetivo principal:
 - Navegar no labirinto.
 - Coletar loot e power-ups.
 - Alcancar EXIT e avancar de setor.
+
+🔗  Jogue aqui: [https://jpedroreiss.github.io/mazeRunner/](https://jpedroreiss.github.io/mazeRunner/)
 
 ## Como Jogar
 - Iniciar partida: Enter, Espaco, clique ou toque.
