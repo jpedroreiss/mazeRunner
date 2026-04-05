@@ -36,6 +36,9 @@ export const Game = (() => {
   };
 
   const BASE_MAZE_CELLS = 8;
+  const NORMAL_SPEED_MULTIPLIER = 2.1;
+  const HARD_SPEED_MULTIPLIER = 1.45;
+  const HARD_BASE_SPEED_MULTIPLIER = NORMAL_SPEED_MULTIPLIER;
 
   /* ── Estado de jogo ── */
   let state, phase, score, highScore, lives;
@@ -52,14 +55,20 @@ export const Game = (() => {
   let wallCycleTimer = 0;
   let stamina = 100;
   let cfg;
+  let hardMode = localStorage.getItem('mr_hard') === '1';
 
   /* ── Configuração escalada por fase ── */
   function getPhaseConfig() {
     const style = getSectorStyle(phase);
+    const enemyCount = hardMode
+      ? Math.min(2 + Math.floor(phase * 1.35), 8)
+      : Math.min(1 + Math.floor(phase * 0.9), 5);
+    const enemySpeed = Math.min(0.055 + phase * 0.007, 0.13) * (hardMode ? HARD_BASE_SPEED_MULTIPLIER : 1);
+
     return {
       mazeCells:      BASE_MAZE_CELLS + 3 + Math.floor(phase * 1.1),
-      enemyCount:     Math.min(1 + Math.floor(phase * 0.9), 5),
-      enemySpeed:     Math.min(0.055 + phase * 0.007, 0.13),
+      enemyCount,
+      enemySpeed,
       bfsInterval:    Math.max(700 - phase * 50, 250),
       phaseTime:      Math.max(90 - phase * 10, 45),
       dayDuration:    20000,
@@ -120,6 +129,7 @@ export const Game = (() => {
       activeEffects: {}, exit: null, dynamicWalls: [], wallFlash: [],
       dayNight: 0, stamina: 100, sectorTheme: null,
       decorTiles: [], zoneMap: null, lootToast: null,
+      hardMode,
     };
     Renderer.render(frameData);
     menuRaf = requestAnimationFrame(startMenuLoop);
@@ -173,9 +183,9 @@ export const Game = (() => {
       x: startCell.x, y: startCell.y,
       rx: startCell.x, ry: startCell.y,
       targetX: startCell.x, targetY: startCell.y,
-      moving: false, baseSpeed: 0.092,
+      moving: false, baseSpeed: hardMode ? 0.092 * HARD_BASE_SPEED_MULTIPLIER : 0.092,
       direction: { x: 0, y: 0 }, nextDir: { x: 0, y: 0 },
-      get speed() { return isEffectActive(POWER_TYPE.SPEED) ? this.baseSpeed * 2.1 : this.baseSpeed; },
+      get speed() { return isEffectActive(POWER_TYPE.SPEED) ? this.baseSpeed * getSpeedLootMultiplier() : this.baseSpeed; },
     };
 
     activeEffects = {};
@@ -212,6 +222,7 @@ export const Game = (() => {
       sectorTheme, decorTiles, zoneMap,
       eventInfo:  { type: dynamicEvent.type, cycle: dynamicEvent.cycle },
       lootToast:  performance.now() < lootToastUntil ? lootToastText : null,
+      hardMode,
     });
   }
 
@@ -562,7 +573,9 @@ export const Game = (() => {
       stamina = Math.max(0, stamina - dt * 3);
     }
 
-    player.baseSpeed = stamina <= 0 && !isEffectActive(POWER_TYPE.INVISIBLE) ? 0.055 : 0.092;
+    const baseSpeed = hardMode ? 0.092 * HARD_BASE_SPEED_MULTIPLIER : 0.092;
+    const exhaustedSpeed = hardMode ? 0.055 * HARD_BASE_SPEED_MULTIPLIER : 0.055;
+    player.baseSpeed = stamina <= 0 && !isEffectActive(POWER_TYPE.INVISIBLE) ? exhaustedSpeed : baseSpeed;
   }
 
   /* ── Efeitos de poder ── */
@@ -742,6 +755,26 @@ export const Game = (() => {
     return { x: sx, y: sy };
   }
 
+  function getSpeedLootMultiplier() {
+    return hardMode ? HARD_SPEED_MULTIPLIER : NORMAL_SPEED_MULTIPLIER;
+  }
+
+  function toggleHardMode() {
+    hardMode = !hardMode;
+    localStorage.setItem('mr_hard', hardMode ? '1' : '0');
+    window.dispatchEvent(new CustomEvent('maze:hardmodechange', { detail: { hardMode } }));
+  }
+
+  function setHardMode(enabled) {
+    hardMode = !!enabled;
+    localStorage.setItem('mr_hard', hardMode ? '1' : '0');
+    window.dispatchEvent(new CustomEvent('maze:hardmodechange', { detail: { hardMode } }));
+  }
+
+  function getHardMode() {
+    return hardMode;
+  }
+
   /* ── Colisões ── */
   function checkCollisions() {
     // Coleta de lootboxes
@@ -893,5 +926,5 @@ export const Game = (() => {
     });
   }
 
-  return { init, startGame, getState: () => state };
+  return { init, startGame, getState: () => state, setHardMode, getHardMode };
 })();

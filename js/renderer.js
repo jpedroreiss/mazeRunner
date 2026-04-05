@@ -1060,6 +1060,11 @@ export const Renderer = (() => {
     ctx.fillStyle = '#7a6848';
     ctx.fillText('WASD / SETAS: MOVER   ·   P / ESC: PAUSA', cx, ctrlY);
 
+    // Modo difícil
+    const hardY = panelY + panelH * 0.88;
+    ctx.fillStyle = data.hardMode ? '#ffd36a' : '#8b7355';
+    ctx.fillText(`MODO DIFICIL: ${data.hardMode ? 'ATIVO' : 'NORMAL'}   ·   USE OS BOTOES`, cx, hardY);
+
     // Power-ups disponíveis
     const pwY    = panelY + panelH * 0.93;
     const pwDefs = [['#00ddff','⚡ SPEED'],['#ff6b8a','❤ STAMINA'],['#ffffaa','💡 LIGHT'],['#ff7d4f','🌀 CONFUSE']];
